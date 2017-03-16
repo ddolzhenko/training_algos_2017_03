@@ -76,6 +76,35 @@ int search_3(std::vector<int>& v, int key) {
     return -1;
 }
 
+int binary_search_helper
+(
+    const  vector<int>& v,  
+    size_t begin,
+    size_t end,
+    int key
+) 
+{
+    assert(std::is_sorted(v.begin(), v.end()));
+
+    if (begin == end) return -1;
+    if (end-begin == 1) {
+        if (v[begin] == key)
+            return begin;
+        else
+            return -1;
+    }
+
+    // [b, e) = [b, m) U [m, e)
+    size_t m = (begin + end) / 2;
+    assert((m-begin) + (end-m) == (end-begin));
+    if (key < v[m]) {
+        return binary_search_helper(v, begin, m, key);
+    } else if (v[m] < key) {
+        return binary_search_helper(v, m, end, key);
+    } else {
+        return m;
+    }
+}
 
 void test_search() {
 
