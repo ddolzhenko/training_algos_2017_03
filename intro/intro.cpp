@@ -76,35 +76,49 @@ int search_3(std::vector<int>& v, int key) {
     return -1;
 }
 
-int binary_search_helper
-(
-    const  vector<int>& v,  
-    size_t begin,
-    size_t end,
-    int key
-) 
+int binary_search_helper (const  vector<int>& v,   
+    size_t begin, size_t end, int key, size_t depth=0) 
 {
+    assert(depth < 1000);
+    assert(std::is_sorted(v.begin(), v.end()));
+    if(b < e) {
+        // [b, e) = [b, m) U [m] U [m+1, e)
+        size_t m = (begin + end) / 2;
+        assert((m-begin) + (end-m) == (end-begin));
+        if (key < v[m]) {
+            return binary_search_helper(v, begin, m, key, depth+1);
+        } else if (v[m] < key) {
+            return binary_search_helper(v, m+1, end, key, depth+1);
+        } else {
+            return m;
+        }
+    }
+
+    return -1;
+}
+
+
+
+int binary_search(const  vector<int>& v, int key) {
     assert(std::is_sorted(v.begin(), v.end()));
 
-    if (begin == end) return -1;
-    if (end-begin == 1) {
-        if (v[begin] == key)
-            return begin;
-        else
-            return -1;
+    size_t b = 0;
+    size_t e = v.size();
+    while(b < e) {
+        // [b, e) = [b, m) U [m] U [m+1, e)
+        size_t m = b + (end-begin)/2;
+        if (key < v[m]) {
+            e = m;
+        } else if (v[m] < key) {
+            b = m+1;
+        } else {
+            return m;
+        }
     }
 
-    // [b, e) = [b, m) U [m, e)
-    size_t m = (begin + end) / 2;
-    assert((m-begin) + (end-m) == (end-begin));
-    if (key < v[m]) {
-        return binary_search_helper(v, begin, m, key);
-    } else if (v[m] < key) {
-        return binary_search_helper(v, m, end, key);
-    } else {
-        return m;
-    }
+    return -1;
 }
+
 
 void test_search() {
 
