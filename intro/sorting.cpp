@@ -114,6 +114,67 @@ void bubble_sort(TIter b, TIter e) {
 }
 
 
+template <class TIter>
+void insertion_sort(TIter b, TIter e) {
+
+     auto pivot = b+1;
+    while(pivot < e) {
+        // [b, pivot) [pivot) [pivot+1, e)
+        assert(std::is_sorted(b, pivot));
+
+        auto i = pivot;
+        while(b < i && *i < *(i-1)) {
+            assert(is_sorted(b, i) && is_sorted(i, pivot));
+            std::iter_swap(i, i-1);
+            --i;
+            assert(is_sorted(b, i) && is_sorted(i, pivot));
+        }
+
+        ++pivot;
+        assert(std::is_sorted(b, pivot));
+    }
+    
+}
+
+template <class TIter>
+void merge(TIter b, TIter m, TIter e, TIter buff) {
+    const auto size = e-b;
+    const auto old = buff;
+    const auto e1 = m;
+
+    while(b < e1 && m < e) {
+        *buff++ = *b < *m ? *b++ : *m++;
+    }
+    buff = copy(b, e1, buff);
+    buff = copy(m, e,  buff);
+
+    assert(buff-old == size);
+}
+
+template <class TIter>
+void merge_sort(TIter b, TIter e, TIter buff) {
+    auto size = e-b;
+    if(size > 1) {
+        auto m = b + size/2;
+        merge_sort(b, m, buff);
+        merge_sort(m, e, buff+(size)/2);
+        std::copy(buff, buff+size, b);
+        merge(b, m, e, buff);
+    } else {
+        std::copy(b, e, buff);
+    }
+}
+
+template <class TIter>
+void merge_sort2(TIter b, TIter e) {
+    std::vector<int> buff(e-b);
+    merge_sort(b, e, buff.begin());
+    copy(buff.begin(), buff.end(), b);
+}
+
+
+
+
 template <class TSorter>
 void test_sorting(TSorter my_sort) {
 
@@ -148,7 +209,8 @@ int main(int argc, char const *argv[]) {
     test_sorting(naive_sort<Iter>);
     test_sorting(selection_sort<Iter>);
     test_sorting(bubble_sort<Iter>);
-    
+    test_sorting(insertion_sort<Iter>);
+    test_sorting(merge_sort2<Iter>);
     return 0;
 }
 
