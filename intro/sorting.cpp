@@ -141,7 +141,6 @@ void merge(TIter b, TIter m, TIter e, TIter buff) {
     const auto size = e-b;
     const auto old = buff;
     const auto e1 = m;
-
     while(b < e1 && m < e) {
         *buff++ = *b < *m ? *b++ : *m++;
     }
@@ -150,18 +149,18 @@ void merge(TIter b, TIter m, TIter e, TIter buff) {
 
     assert(buff-old == size);
 }
-
 template <class TIter>
 void merge_sort(TIter b, TIter e, TIter buff) {
     auto size = e-b;
-    if(size > 1) {
+    if(size < 1024) {
+        std::copy(b, e, buff);
+        insertion_sort(buff, buff+size);
+    } else {
         auto m = b + size/2;
         merge_sort(b, m, buff);
         merge_sort(m, e, buff+(size)/2);
         std::copy(buff, buff+size, b);
         merge(b, m, e, buff);
-    } else {
-        std::copy(b, e, buff);
     }
 }
 
@@ -172,6 +171,73 @@ void merge_sort2(TIter b, TIter e) {
     copy(buff.begin(), buff.end(), b);
 }
 
+
+template <class TIter>
+TIter partition1(TIter b, TIter p, TIter e) {
+    assert(b < e);
+    auto pivot = *p;
+    swap(*(e-1), *p);
+    auto ub = b;
+    auto ue = e-1;
+    // [b, ub) [ub, ue) [ue, e)
+    // [ <p  ) [      ) [ p<= )
+    while (ub < ue) {
+        if(*ub < pivot) {
+            ++ub;
+        } else {
+            --ue;
+            swap(*ub, *ue);
+        }
+    }
+
+    swap(*ub, *(e-1));
+    return ub;
+}
+
+template <class TIter>
+TIter partition2(TIter b, TIter p, TIter e) {
+    assert(b < e);
+    auto pivot = *p;
+    iter_swap(e-1, p);
+    auto b2 = b;
+    auto e2 = b;
+    // [b, b2) [b2, e2) [e2, e)
+    // [ <p  ) [ p <= ) [ unp )
+    while (e2 < e-1) {
+        if(*e2 < pivot) {
+            swap(*b2, *e2);
+            ++b2;
+        }
+        ++e2;
+    }
+    iter_swap(e-1, b2);
+    return b2;
+}
+
+
+template <class TIter>
+TIter pivot_strategy(TIter b, TIter e) {
+    assert(b < e);
+    auto m = b + (e-b)/2;
+    auto last = e-1;
+    
+    // WRONG
+    if(*m < *b) swap(b, m);
+    if(*last < *m) swap(last, m);
+    if(*m < *b) swap(b, m);
+    return m;
+}
+
+
+template <class TIter>
+void quck_sort(TIter b, TIter e) {
+    if(e-b > 1) {
+        auto p = partition2(b, pivot_strategy(b, e), e);
+        // assert(*max(b, p) <= *p && p < *min(p+1, e) );
+        quck_sort(b, p);
+        quck_sort(p+1, e);
+    }
+}
 
 
 
@@ -211,6 +277,7 @@ int main(int argc, char const *argv[]) {
     test_sorting(bubble_sort<Iter>);
     test_sorting(insertion_sort<Iter>);
     test_sorting(merge_sort2<Iter>);
+    test_sorting(quck_sort<Iter>);
     return 0;
 }
 
